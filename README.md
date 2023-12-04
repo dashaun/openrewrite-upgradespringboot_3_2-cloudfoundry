@@ -19,6 +19,10 @@
 ./demo.sh
 ```
 
+## Notes
+
+This demo can take over 7-minutes to complete on my computer, I recommend doing the cleanup steps ahead of time.
+
 ## Attributions
 - [Demo Magic](https://github.com/paxtonhare/demo-magic) is pulled via `vendir sync`
 
