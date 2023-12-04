@@ -90,9 +90,9 @@ function showMemoryUsage {
   echo "${mem_usage}" >> "$log_file"
 }
 
-# Upgrade the application to Spring Boot 3.1
+# Upgrade the application to Spring Boot 3.2
 function rewriteApplication {
-  displayMessage "Upgrade to Spring Boot 3.1"
+  displayMessage "Upgrade to Spring Boot 3.2"
   pei "./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-spring:LATEST -DactiveRecipes=org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2"
 }
 
@@ -105,7 +105,7 @@ function buildNative {
 # Start the native image
 function startNative {
   displayMessage "Start the native image"
-  pei "./target/hello-spring 2>&1 | tee nativeWith3.1.log &"
+  pei "./target/hello-spring 2>&1 | tee nativeWith3.2.log &"
 }
 
 # Stop the native image
@@ -142,22 +142,22 @@ function statsSoFar {
   echo "The process was using $(cat java8with2.6.log2) megabytes"
   echo ""
   echo ""
-  echo "Spring Boot 3.1 with Java 21"
-  grep -o 'Started HelloSpringApplication in .*' < java21with3.1.log
-  echo "The process was using $(cat java21with3.1.log2) megabytes"
+  echo "Spring Boot 3.2 with Java 17"
+  grep -o 'Started HelloSpringApplication in .*' < java17with3.2.log
+  echo "The process was using $(cat java17with3.2.log2) megabytes"
   echo ""
   echo ""
-  echo "Spring Boot 3.1 with AOT processing, native image"
-  grep -o 'Started HelloSpringApplication in .*' < nativeWith3.1.log
-  echo "The process was using $(cat nativeWith3.1.log2) megabytes"
+  echo "Spring Boot 3.2 with AOT processing, native image"
+  grep -o 'Started HelloSpringApplication in .*' < nativeWith3.2.log
+  echo "The process was using $(cat nativeWith3.2.log2) megabytes"
   echo ""
   echo ""
   MEM1="$(grep '\S' java8with2.6.log2)"
-  MEM2="$(grep '\S' java21with3.1.log2)"
-  MEM3="$(grep '\S' nativeWith3.1.log2)"
+  MEM2="$(grep '\S' java17with3.2.log2)"
+  MEM3="$(grep '\S' nativeWith3.2.log2)"
   echo ""
-  echo "The Spring Boot 3.1 with Java 21 version is using $(bc <<< "scale=2; ${MEM2}/${MEM1}*100")% of the original footprint"
-  echo "The Spring Boot 3.1 with AOT processing version is using $(bc <<< "scale=2; ${MEM3}/${MEM1}*100")% of the original footprint" 
+  echo "The Spring Boot 3.2 with Java 17 version is using $(bc <<< "scale=2; ${MEM2}/${MEM1}*100")% of the original footprint"
+  echo "The Spring Boot 3.2 with AOT processing version is using $(bc <<< "scale=2; ${MEM3}/${MEM1}*100")% of the original footprint" 
 }
 
 function statsSoFarTable {
@@ -174,17 +174,17 @@ function statsSoFarTable {
   MEM1=$(cat java8with2.6.log2)
   printf "%-35s %-25s %-15s %s\n" "Spring Boot 2.6 with Java 8" "$(startupTime 'java8with2.6.log')" "$MEM1" "-"
 
-  # Spring Boot 3.1 with Java 21
-  #STARTUP2=$(grep -o 'Started HelloSpringApplication in .*' < java21with3.1.log)
-  MEM2=$(cat java21with3.1.log2)
+  # Spring Boot 3.2 with Java 17
+  #STARTUP2=$(grep -o 'Started HelloSpringApplication in .*' < java17with3.2.log)
+  MEM2=$(cat java17with3.2.log2)
   PERC2=$(bc <<< "scale=2; 100 - ${MEM2}/${MEM1}*100")
-  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.1 with Java 21" "$(startupTime 'java21with3.1.log')" "$MEM2" "$PERC2%"
+  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.2 with Java 17" "$(startupTime 'java17with3.2.log')" "$MEM2" "$PERC2%"
 
-  # Spring Boot 3.1 with AOT processing, native image
-  #STARTUP3=$(grep -o 'Started HelloSpringApplication in .*' < nativeWith3.1.log)
-  MEM3=$(cat nativeWith3.1.log2)
+  # Spring Boot 3.2 with AOT processing, native image
+  #STARTUP3=$(grep -o 'Started HelloSpringApplication in .*' < nativeWith3.2.log)
+  MEM3=$(cat nativeWith3.2.log2)
   PERC3=$(bc <<< "scale=2; 100 - ${MEM3}/${MEM1}*100")
-  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.1 with AOT, native" "$(startupTime 'nativeWith3.1.log')" "$MEM3" "$PERC3%"
+  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.2 with AOT, native" "$(startupTime 'nativeWith3.2.log')" "$MEM3" "$PERC3%"
 
   echo "--------------------------------------------------------------------------------------------"
   echo "Same apps running on Cloud Foundry"
@@ -229,11 +229,11 @@ rewriteApplication
 talkingPoint
 useJava17
 talkingPoint
-springBootStart java21with3.1.log
+springBootStart java17with3.2.log
 talkingPoint
 validateApp
 talkingPoint
-showMemoryUsage "$(jps | grep 'HelloSpringApplication' | cut -d ' ' -f 1)" java21with3.1.log2
+showMemoryUsage "$(jps | grep 'HelloSpringApplication' | cut -d ' ' -f 1)" java17with3.2.log2
 talkingPoint
 springBootStop
 talkingPoint
@@ -245,7 +245,7 @@ startNative
 talkingPoint
 validateApp
 talkingPoint
-showMemoryUsage "$(pgrep hello-spring)" nativeWith3.1.log2
+showMemoryUsage "$(pgrep hello-spring)" nativeWith3.2.log2
 talkingPoint
 stopNative
 talkingPoint
