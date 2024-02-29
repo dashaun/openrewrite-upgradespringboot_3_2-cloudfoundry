@@ -30,8 +30,8 @@ function initSDKman() {
     exit 1
   fi
   sdk update
-  sdk install java 8.0.392-librca
-  sdk install java 17.0.9-librca
+  sdk install java 8.0.402-librca
+  sdk install java 23.0.3.r17-nik
 }
 
 # Prepare the working directory
@@ -45,14 +45,14 @@ function init {
 # Switch to Java 8 and display version
 function useJava8 {
   displayMessage "Use Java 8, this is for educational purposes only, don't do this at home! (I have jokes.)"
-  pei "sdk use java 8.0.392-librca"
+  pei "sdk use java 8.0.402-librca"
   pei "java -version" 
 }
 
 # Switch to Java 17 and display version
 function useJava17 {
   displayMessage "Switch to Java 17 for Spring Boot 3"
-  pei "sdk use java 17.0.9-librca"
+  pei "sdk use java 23.0.3.r17-nik"
   pei "java -version"
 }
 
@@ -93,7 +93,7 @@ function showMemoryUsage {
 # Upgrade the application to Spring Boot 3.2
 function rewriteApplication {
   displayMessage "Upgrade to Spring Boot 3.2"
-  pei "./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-spring:LATEST -DactiveRecipes=org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2"
+  pei "./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-spring:LATEST -Drewrite.activeRecipes=org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2"
 }
 
 # Build a native image of the application
