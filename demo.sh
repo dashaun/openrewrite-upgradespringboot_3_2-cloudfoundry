@@ -5,7 +5,7 @@ vendir sync
 . ./vendir/demo-magic/demo-magic.sh
 export TYPE_SPEED=100
 export DEMO_PROMPT="${GREEN}➜ ${CYAN}\W ${COLOR_RESET}"
-JAVA_21="23.0.3.r17-nik"
+JAVA_21="23.1.2.r21-nik"
 JAVA_8="8.0.402-librca"
 TEMP_DIR="upgrade-example"
 PROMPT_TIMEOUT=5
