@@ -5,6 +5,8 @@ vendir sync
 . ./vendir/demo-magic/demo-magic.sh
 export TYPE_SPEED=100
 export DEMO_PROMPT="${GREEN}➜ ${CYAN}\W ${COLOR_RESET}"
+JAVA_21="23.0.3.r17-nik"
+JAVA_8="8.0.402-librca"
 TEMP_DIR="upgrade-example"
 PROMPT_TIMEOUT=5
 
@@ -16,7 +18,7 @@ function talkingPoint() {
 
 function cleanupCF {
   cf delete -f -r springj8
-  cf delete -f -r springj17
+  cf delete -f -r springj21
   cf delete -f -r springnative
 }
 
@@ -30,8 +32,8 @@ function initSDKman() {
     exit 1
   fi
   sdk update
-  sdk install java 8.0.402-librca
-  sdk install java 23.0.3.r17-nik
+  sdk install java $JAVA_8
+  sdk install java $JAVA_21
 }
 
 # Prepare the working directory
@@ -45,14 +47,14 @@ function init {
 # Switch to Java 8 and display version
 function useJava8 {
   displayMessage "Use Java 8, this is for educational purposes only, don't do this at home! (I have jokes.)"
-  pei "sdk use java 8.0.402-librca"
+  pei "sdk use java $JAVA_8"
   pei "java -version" 
 }
 
-# Switch to Java 17 and display version
-function useJava17 {
-  displayMessage "Switch to Java 17 for Spring Boot 3"
-  pei "sdk use java 23.0.3.r17-nik"
+# Switch to Java 21 and display version
+function useJava21 {
+  displayMessage "Switch to Java 21 for Spring Boot 3"
+  pei "sdk use java $JAVA_21"
   pei "java -version"
 }
 
@@ -142,9 +144,9 @@ function statsSoFar {
   echo "The process was using $(cat java8with2.6.log2) megabytes"
   echo ""
   echo ""
-  echo "Spring Boot 3.2 with Java 17"
-  grep -o 'Started HelloSpringApplication in .*' < java17with3.2.log
-  echo "The process was using $(cat java17with3.2.log2) megabytes"
+  echo "Spring Boot 3.2 with Java 21"
+  grep -o 'Started HelloSpringApplication in .*' < java21with3.2.log
+  echo "The process was using $(cat java21with3.2.log2) megabytes"
   echo ""
   echo ""
   echo "Spring Boot 3.2 with AOT processing, native image"
@@ -153,10 +155,10 @@ function statsSoFar {
   echo ""
   echo ""
   MEM1="$(grep '\S' java8with2.6.log2)"
-  MEM2="$(grep '\S' java17with3.2.log2)"
+  MEM2="$(grep '\S' java21with3.2.log2)"
   MEM3="$(grep '\S' nativeWith3.2.log2)"
   echo ""
-  echo "The Spring Boot 3.2 with Java 17 version is using $(bc <<< "scale=2; ${MEM2}/${MEM1}*100")% of the original footprint"
+  echo "The Spring Boot 3.2 with Java 21 version is using $(bc <<< "scale=2; ${MEM2}/${MEM1}*100")% of the original footprint"
   echo "The Spring Boot 3.2 with AOT processing version is using $(bc <<< "scale=2; ${MEM3}/${MEM1}*100")% of the original footprint" 
 }
 
@@ -174,11 +176,11 @@ function statsSoFarTable {
   MEM1=$(cat java8with2.6.log2)
   printf "%-35s %-25s %-15s %s\n" "Spring Boot 2.6 with Java 8" "$(startupTime 'java8with2.6.log')" "$MEM1" "-"
 
-  # Spring Boot 3.2 with Java 17
-  #STARTUP2=$(grep -o 'Started HelloSpringApplication in .*' < java17with3.2.log)
-  MEM2=$(cat java17with3.2.log2)
+  # Spring Boot 3.2 with Java 21
+  #STARTUP2=$(grep -o 'Started HelloSpringApplication in .*' < java21with3.2.log)
+  MEM2=$(cat java21with3.2.log2)
   PERC2=$(bc <<< "scale=2; 100 - ${MEM2}/${MEM1}*100")
-  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.2 with Java 17" "$(startupTime 'java17with3.2.log')" "$MEM2" "$PERC2%"
+  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.2 with Java 21" "$(startupTime 'java21with3.2.log')" "$MEM2" "$PERC2%"
 
   # Spring Boot 3.2 with AOT processing, native image
   #STARTUP3=$(grep -o 'Started HelloSpringApplication in .*' < nativeWith3.2.log)
@@ -190,7 +192,7 @@ function statsSoFarTable {
   echo "Same apps running on Cloud Foundry"
   echo "--------------------------------------------------------------------------------------------"
   cf app springj8 | grep "#0"
-  cf app springj17 | grep "#0"
+  cf app springj21 | grep "#0"
   cf app springnative | grep "#0"
 
 }
@@ -227,17 +229,17 @@ cfPush manifest-java8.yml
 talkingPoint
 rewriteApplication
 talkingPoint
-useJava17
+useJava21
 talkingPoint
-springBootStart java17with3.2.log
+springBootStart java21with3.2.log
 talkingPoint
 validateApp
 talkingPoint
-showMemoryUsage "$(jps | grep 'HelloSpringApplication' | cut -d ' ' -f 1)" java17with3.2.log2
+showMemoryUsage "$(jps | grep 'HelloSpringApplication' | cut -d ' ' -f 1)" java21with3.2.log2
 talkingPoint
 springBootStop
 talkingPoint
-cfPush manifest-java17.yml
+cfPush manifest-java21.yml
 talkingPoint
 buildNative
 talkingPoint
