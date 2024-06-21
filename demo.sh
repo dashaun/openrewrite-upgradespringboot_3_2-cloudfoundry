@@ -5,8 +5,8 @@ vendir sync
 . ./vendir/demo-magic/demo-magic.sh
 export TYPE_SPEED=100
 export DEMO_PROMPT="${GREEN}➜ ${CYAN}\W ${COLOR_RESET}"
-JAVA_21="23.1.2.r21-nik"
-JAVA_8="8.0.402-librca"
+JAVA_21="23.1.3.r21-nik"
+JAVA_8="8.0.412-librca"
 TEMP_DIR="upgrade-example"
 PROMPT_TIMEOUT=5
 
@@ -95,7 +95,7 @@ function showMemoryUsage {
 # Upgrade the application to Spring Boot 3.2
 function rewriteApplication {
   displayMessage "Upgrade to Spring Boot 3.2"
-  pei "./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-spring:LATEST -Drewrite.activeRecipes=org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2"
+  pei "./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-spring:LATEST -Drewrite.activeRecipes=org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_3"
 }
 
 # Build a native image of the application
