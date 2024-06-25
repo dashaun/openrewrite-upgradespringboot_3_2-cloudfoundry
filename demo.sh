@@ -13,6 +13,8 @@ PROMPT_TIMEOUT=5
 
 # Function to pause and clear the screen
 function talkingPoint() {
+  echo ""
+  echo "..."
   wait
   clear
 }
