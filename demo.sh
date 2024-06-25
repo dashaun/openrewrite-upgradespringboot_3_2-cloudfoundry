@@ -146,6 +146,10 @@ function statsSoFarTable {
   printf "%-35s %-25s %-15s %s\n" "Spring Boot 3.3 with AOT, native" "$(startupTime 'nativeWith3.3.log')" "$MEM3" "$PERC3%"
 }
 
+function cfStats {
+  bash ../stats.sh
+}
+
 # Cloud Foundry push for non-native app
 function cfPush {
   local manifest_file=$1
