@@ -8,7 +8,7 @@ while true; do
 
     
     # Check if the status1 is 'running'
-    if [ "$status1" == "running" && "$status2" == "running" && "$status3" == "running" ]; 
+    if [ "$status1" == "running" ] && [ "$status2" == "running" ] && [ "$status3" == "running" ]; 
     then
         break
     fi
