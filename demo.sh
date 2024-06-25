@@ -6,6 +6,7 @@ vendir sync
 export TYPE_SPEED=100
 export DEMO_PROMPT="${GREEN}➜ ${CYAN}\W ${COLOR_RESET}"
 JAVA_21="23.1.3.r21-nik"
+JAVA_17="17.0.11-librca"
 JAVA_8="8.0.412-librca"
 TEMP_DIR="upgrade-example"
 PROMPT_TIMEOUT=5
@@ -14,12 +15,6 @@ PROMPT_TIMEOUT=5
 function talkingPoint() {
   wait
   clear
-}
-
-function cleanupCF {
-  cf delete -f -r springj8
-  cf delete -f -r springj21
-  cf delete -f -r springnative
 }
 
 # Initialize SDKMAN and install required Java versions
@@ -92,9 +87,9 @@ function showMemoryUsage {
   echo "${mem_usage}" >> "$log_file"
 }
 
-# Upgrade the application to Spring Boot 3.2
+# Upgrade the application to Spring Boot 3.3
 function rewriteApplication {
-  displayMessage "Upgrade to Spring Boot 3.2"
+  displayMessage "Upgrade to Spring Boot 3.3 using a nested set of recipes from OpenRewrite"
   pei "./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-spring:LATEST -Drewrite.activeRecipes=org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_3"
 }
 
@@ -107,7 +102,7 @@ function buildNative {
 # Start the native image
 function startNative {
   displayMessage "Start the native image"
-  pei "./target/hello-spring 2>&1 | tee nativeWith3.2.log &"
+  pei "./target/hello-spring 2>&1 | tee nativeWith3.3.log &"
 }
 
 # Stop the native image
@@ -135,33 +130,6 @@ function startupTime() {
   echo "$(sed -nE 's/.* in ([0-9]+\.[0-9]+) seconds.*/\1/p' < $1)"
 }
 
-# Compare and display statistics
-function statsSoFar {
-  displayMessage "Comparison of memory usage and startup times"
-  echo ""
-  echo "Spring Boot 2.6 with Java 8"
-  grep -o 'Started HelloSpringApplication in .*' < java8with2.6.log
-  echo "The process was using $(cat java8with2.6.log2) megabytes"
-  echo ""
-  echo ""
-  echo "Spring Boot 3.2 with Java 21"
-  grep -o 'Started HelloSpringApplication in .*' < java21with3.2.log
-  echo "The process was using $(cat java21with3.2.log2) megabytes"
-  echo ""
-  echo ""
-  echo "Spring Boot 3.2 with AOT processing, native image"
-  grep -o 'Started HelloSpringApplication in .*' < nativeWith3.2.log
-  echo "The process was using $(cat nativeWith3.2.log2) megabytes"
-  echo ""
-  echo ""
-  MEM1="$(grep '\S' java8with2.6.log2)"
-  MEM2="$(grep '\S' java21with3.2.log2)"
-  MEM3="$(grep '\S' nativeWith3.2.log2)"
-  echo ""
-  echo "The Spring Boot 3.2 with Java 21 version is using $(bc <<< "scale=2; ${MEM2}/${MEM1}*100")% of the original footprint"
-  echo "The Spring Boot 3.2 with AOT processing version is using $(bc <<< "scale=2; ${MEM3}/${MEM1}*100")% of the original footprint" 
-}
-
 function statsSoFarTable {
   displayMessage "Comparison of memory usage and startup times"
   echo ""
@@ -176,17 +144,17 @@ function statsSoFarTable {
   MEM1=$(cat java8with2.6.log2)
   printf "%-35s %-25s %-15s %s\n" "Spring Boot 2.6 with Java 8" "$(startupTime 'java8with2.6.log')" "$MEM1" "-"
 
-  # Spring Boot 3.2 with Java 21
-  #STARTUP2=$(grep -o 'Started HelloSpringApplication in .*' < java21with3.2.log)
-  MEM2=$(cat java21with3.2.log2)
+  # Spring Boot 3.3 with Java 21
+  #STARTUP2=$(grep -o 'Started HelloSpringApplication in .*' < java21with3.3.log)
+  MEM2=$(cat java21with3.3.log2)
   PERC2=$(bc <<< "scale=2; 100 - ${MEM2}/${MEM1}*100")
-  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.2 with Java 21" "$(startupTime 'java21with3.2.log')" "$MEM2" "$PERC2%"
+  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.3 with Java 21" "$(startupTime 'java21with3.3.log')" "$MEM2" "$PERC2%"
 
-  # Spring Boot 3.2 with AOT processing, native image
-  #STARTUP3=$(grep -o 'Started HelloSpringApplication in .*' < nativeWith3.2.log)
-  MEM3=$(cat nativeWith3.2.log2)
+  # Spring Boot 3.3 with AOT processing, native image
+  #STARTUP3=$(grep -o 'Started HelloSpringApplication in .*' < nativeWith3.3.log)
+  MEM3=$(cat nativeWith3.3.log2)
   PERC3=$(bc <<< "scale=2; 100 - ${MEM3}/${MEM1}*100")
-  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.2 with AOT, native" "$(startupTime 'nativeWith3.2.log')" "$MEM3" "$PERC3%"
+  printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.3 with AOT, native" "$(startupTime 'nativeWith3.3.log')" "$MEM3" "$PERC3%"
 
   echo "--------------------------------------------------------------------------------------------"
   echo "Same apps running on Cloud Foundry"
@@ -204,13 +172,17 @@ function imageStats {
 
 # CF Push
 function cfPush {
-  pei "cd .."
-  pei "cf push -f $1"
-  pei "cd upgrade-example"
+  pei "cf push -f ../$1 > /dev/null  2>&1 &"
+}
+
+# CF Push
+function cfPushNative {
+  pei "cd ../prebaked"
+  pei "cf push -f manifest-native.yml > /dev/null  2>&1 &"
+  pei "cd ../upgrade-example"
 }
 
 # Main execution flow
-cleanupCF
 initSDKman
 init
 useJava8
@@ -231,11 +203,11 @@ rewriteApplication
 talkingPoint
 useJava21
 talkingPoint
-springBootStart java21with3.2.log
+springBootStart java21with3.3.log
 talkingPoint
 validateApp
 talkingPoint
-showMemoryUsage "$(jps | grep 'HelloSpringApplication' | cut -d ' ' -f 1)" java21with3.2.log2
+showMemoryUsage "$(jps | grep 'HelloSpringApplication' | cut -d ' ' -f 1)" java21with3.3.log2
 talkingPoint
 springBootStop
 talkingPoint
@@ -247,11 +219,10 @@ startNative
 talkingPoint
 validateApp
 talkingPoint
-showMemoryUsage "$(pgrep hello-spring)" nativeWith3.2.log2
+showMemoryUsage "$(pgrep hello-spring)" nativeWith3.3.log2
 talkingPoint
 stopNative
 talkingPoint
-cfPush manifest-native.yml
+cfPushNative
 talkingPoint
-#statsSoFar
 statsSoFarTable
