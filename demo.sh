@@ -159,20 +159,23 @@ function statsSoFarTable {
 }
 
 function cfStats {
-  while true; do
-      # Get the line containing '#0'
-      status1=$(cf app springj8 | grep '#0' | awk '{print $2}')
-      status2=$(cf app springj21 | grep '#0' | awk '{print $2}')
-      status3=$(cf app springnative | grep '#0' | awk '{print $2}')
+  # Define the app names
+  apps=("springj8" "springj21" "springnative")
   
-      
-      # Check if the status1 is 'running'
-      if [ "$status1" == "running" && "$status2" == "running" && "$status3" == "running" ]; 
-      then
+  while true; do
+      all_running=true
+      for app in "${apps[@]}"; do
+          status=$(cf app "$app" | grep '#0' | awk '{print $2}')
+          if [ "$status" != "running" ]; then
+              all_running=false
+              break
+          fi
+      done
+
+      if [ "$all_running" = true ]; then
           break
       fi
-      
-      # Wait for a few seconds before checking again
+      echo "Waiting for all apps to be running..."
       sleep 5
   done
   
