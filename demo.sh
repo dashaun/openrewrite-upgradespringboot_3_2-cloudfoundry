@@ -144,6 +144,8 @@ function statsSoFarTable {
   MEM3=$(cat nativeWith3.3.log2)
   PERC3=$(bc <<< "scale=2; 100 - ${MEM3}/${MEM1}*100")
   printf "%-35s %-25s %-15s %s\n" "Spring Boot 3.3 with AOT, native" "$(startupTime 'nativeWith3.3.log')" "$MEM3" "$PERC3%"
+  echo "--------------------------------------------------------------------------------------------"
+  echo ""
 }
 
 function cfStats {
